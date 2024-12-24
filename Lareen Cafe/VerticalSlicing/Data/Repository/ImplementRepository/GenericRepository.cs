@@ -75,8 +75,9 @@ namespace LareenCafe.Api.VerticalSlicing.Data.Repository.Repository
 
         public void Delete(T entity)
         {
-            entity.IsDeleted = true;
-            Update(entity);
+            _dBContext.Set<T>().Remove(entity);
+            //entity.IsDeleted = true;
+            //Update(entity);
         }
 
         public void DeleteById(int id)

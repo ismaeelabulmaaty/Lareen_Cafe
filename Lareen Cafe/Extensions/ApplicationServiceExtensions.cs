@@ -1,12 +1,16 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Lareen_Cafe.VerticalSlicing.Common;
+using Lareen_Cafe.VerticalSlicing.Features.Account.Common.Helper;
 using LareenCafe.Api.VerticalSlicing.Data.Context;
 using LareenCafe.Api.VerticalSlicing.Data.Repository.Interface;
 using LareenCafe.Api.VerticalSlicing.Data.Repository.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 
 namespace LareenCafe.Api.Extensions
 {
@@ -21,9 +25,9 @@ namespace LareenCafe.Api.Extensions
             services.AddSwaggerGen()
                     .AddFluentValidationConfig();
 
-            //services.AddHttpContextAccessor();
+            services.AddHttpContextAccessor();
 
-            // services.AddAuthConfig(configuration);
+             services.AddAuthConfig(configuration);
 
             services.AddDbContext<ApplicationDBContext>(options =>
             {
@@ -54,6 +58,41 @@ namespace LareenCafe.Api.Extensions
 
             return services;
         }
+
+        private static IServiceCollection AddAuthConfig(this IServiceCollection services,
+       IConfiguration configuration)
+        {
+            services.AddOptions<JwtOptions>()
+                    .BindConfiguration(JwtOptions.SectionName)
+                    .ValidateDataAnnotations()
+                    .ValidateOnStart();
+
+            var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
+            services.AddAuthentication(opts =>
+            {
+                opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opts.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+              .AddJwtBearer(options =>
+              {
+                  options.SaveToken = true;
+                  options.TokenValidationParameters = new TokenValidationParameters
+                  {
+                      ValidateIssuer = true,
+                      ValidateAudience = true,
+                      ValidateLifetime = true,
+                      ValidateIssuerSigningKey = true,
+                      ValidIssuer = jwtSettings?.Issuer,
+                      ValidAudience = jwtSettings?.Audience,
+                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+                      ClockSkew = TimeSpan.Zero
+                  };
+              });
+
+            return services;
+        }
+
 
 
     }

@@ -17,7 +17,6 @@ namespace LareenCafe.Api.VerticalSlicing.Data.Repository.Interface
         Task<int> SaveChangesAsync();
         Task<T> FirstAsync(Expression<Func<T, bool>> predicate);
         Task<IQueryable<T>> GetAsyncToInclude(Expression<Func<T, bool>> expression);
-
         Task<IEnumerable<T>> GetAllWithSpecAsync(ISpecification<T> Spec);
         Task<T?> GetByIdWithSpecAsync(ISpecification<T> Spec);
         Task<int> GetCountWithSpecAsync(ISpecification<T> Spec);
